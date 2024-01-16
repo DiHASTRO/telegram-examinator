@@ -1,4 +1,4 @@
-import database
+from . import models
 
-db = database.Database()
-
+u = models.User(1234)
+u.save()
