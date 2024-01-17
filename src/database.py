@@ -43,14 +43,12 @@ class Database(object, metaclass=SingletonMeta):
             for query in sql_constants.TABLES_INIT_QUERIES.values():
                 cur.execute(query)
             self._connection.commit()
+        finally:
             cur.close()
-        except Exception as e:
-            cur.close()
-            raise e
 
-    def _insert_user(self, user_tuple: tuple) -> None:
+    def _insert_user(self, names_values: list) -> None:
         with CursorWrapper(self._conn) as cur:
-            cur.execute(sql_constants.INSERT_QUERIES['users'], user_tuple)
+            cur.execute(sql_constants.INSERT_QUERIES['users'].format(*names_values))
             self._conn.commit()
 
 
@@ -67,8 +65,4 @@ class CursorWrapper(object):
     
     def __exit__(self, exc_type, exc_value, tb) -> True:
         self.cursor.close()
-
-        if exc_type is not None:
-            return False
-
-        return True
+        return exc_type is None

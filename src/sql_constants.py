@@ -60,5 +60,5 @@ TABLES_INIT_QUERIES = {
 }
 
 INSERT_QUERIES = {
-    'users': 'INSERT INTO users VALUES (?, ?, ?, ?);'
+    'users': 'INSERT INTO users {0} VALUES {1};'
 }
