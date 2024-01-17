@@ -3,6 +3,12 @@ from abc import ABC, abstractmethod
 from . import database
 
 class ModelBase(object):
+    def __str__(self):
+        to_join = []
+        for k, v in self.__dict__.items():
+            to_join.append(f'{k}={v}')
+        return f"{self.__class__.__name__}[{', '.join(to_join)}]"
+
     def get_serializable_format(self):
         braces_str = '({})'
         str_builder_1 = []
@@ -22,6 +28,10 @@ class User(ModelBase):
     tg_user_id: int = None
     state: int = None
     additional_info: int = None
+
+    @staticmethod
+    def get_user_by_id(id: int):
+        return User(database.Database()._get_user_data_by_id(id))
 
     def __init__(self, tg_user_id: int, state: int = None, additional_info: int = None):
         self.tg_user_id = tg_user_id
