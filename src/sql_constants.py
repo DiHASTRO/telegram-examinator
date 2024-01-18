@@ -59,10 +59,14 @@ TABLES_INIT_QUERIES = {
                                 );"""
 }
 
+PRAGMA_QUERIES = {
+    'turn_foreign_keys_on': 'PRAGMA foreign_keys = ON;',
+}
+
 INSERT_QUERIES = {
-    'users': 'INSERT INTO users {0} VALUES {1};',
+    'common_insert': 'INSERT INTO {0} {1} VALUES {2};',
 }
 
 SELECT_QUERIES = {
-    'get_user_by_column': 'SELECT * FROM users WHERE {0} = {1}',
+    'get_by_column': 'SELECT * FROM {0} WHERE {1} = {2}',
 }

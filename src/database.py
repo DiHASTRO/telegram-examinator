@@ -32,6 +32,9 @@ class Database(object, metaclass=SingletonMeta):
             elif self._connection is None:
                 self._connection = sql.connect(settings.DATABASE_PATH)
                 logger.info(f'Connected to database')
+            with CursorWrapper(self._connection) as cur:
+                cur.execute(sql_constants.PRAGMA_QUERIES['turn_foreign_keys_on'])
+                self._connection.commit()
         except Exception as e:
             logger.critical(f'Failed to connect to database: {e}', exc_info=True)
             raise e
@@ -51,27 +54,24 @@ class Database(object, metaclass=SingletonMeta):
         try:
             logger.debug(f'Adding tables and constraints ...')
             for query in sql_constants.TABLES_INIT_QUERIES.values():
-                logger.debug(f'SQL query: {query}')
                 cur.execute(query)
             self._connection.commit()
         finally:
             cur.close()
         logger.info(f"Databased created succesfully with path {path}")
 
-    def _insert_user(self, names_values: list) -> None:
-        logger.debug(f'Inserting user into database with values: {dict(map(lambda k, v : (k, v), *names_values))} ...')
+    def _insert_in_table(self, table: str, names_values: list) -> None:
+        logger.debug(f'Inserting {table} database with values: {dict(map(lambda k, v : (k, v), *names_values))} ...')
         with CursorWrapper(self._conn) as cur:
-            query = sql_constants.INSERT_QUERIES['users'].format(*names_values)
-            logger.debug(f'SQL query: {query}')
+            query = sql_constants.INSERT_QUERIES['common_insert'].format(table, *names_values)
             cur.execute(query)
             self._conn.commit()
-        logger.info(f'User inserted successfully into database with values: {names_values}')
+        logger.info(f'Inserted successfully into \'{table}\' with values: {names_values}')
 
-    def _get_user_data_by_column(self, column: str, id: int) -> tuple:
-        logger.debug(f'Getting user data by database id = {id}')
+    def _get_table_data_by_column(self, table: str, column: str, id: int) -> tuple:
+        logger.debug(f'Getting data from \'{table}\' with id = {id}')
         with CursorWrapper(self._conn) as cur:
-            query = sql_constants.SELECT_QUERIES['get_user_by_column'].format(column, id)
-            logger.debug(f'SQL query: {query}')
+            query = sql_constants.SELECT_QUERIES['get_by_column'].format(table, column, id)
 
             try:
                 res = cur.execute(query)
@@ -81,29 +81,30 @@ class Database(object, metaclass=SingletonMeta):
             
             data = res.fetchone()
             if data is None:
-                logger.warning(f'User with {column} = {id} does not exist')
+                logger.warning(f'Row in \'{table}\' with {column} = {id} does not exist')
             else:
-                logger.info(f'Succesfully gotten user data from database with {column} = {id}')
+                logger.info(f'Succesfully gotten data from \'{table}\' with {column} = {id}')
         
         return data 
 
 
-class CursorWrapper(object):
-
+class CursorWrapper(sql.Cursor):
     def __init__(self, conn: sql.Connection, *args, **kwargs):
+        super().__init__(conn, *args, **kwargs)
         self.conn = conn
-        self.args = args
-        self.kwargs = kwargs
-    
-    def __enter__(self) -> sql.Cursor:
-        self.cursor = self.conn.cursor(*self.args, *self.kwargs)
         logger.debug(f"Cursor opened to connection {self.conn}")
-        return self.cursor
+        
+    def __enter__(self) -> sql.Cursor:
+        return self
     
     def __exit__(self, exc_type, exc_value, tb) -> True:
-        self.cursor.close()
+        self.close()
         logger.debug(f"Cursor closed to connection {self.conn}")
 
         if exc_type is not None:
             logger.warning(f"Exception with cursor occured: {exc_value}")
         return exc_type is None
+
+    def execute(self, __sql: str, __parameters: list = ()):
+        logger.debug(f'SQL query: {__sql} {f"with parameters {__parameters}" if __parameters else ""}')
+        return super().execute(__sql, __parameters)
