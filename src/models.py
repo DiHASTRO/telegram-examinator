@@ -31,7 +31,15 @@ class User(ModelBase):
 
     @staticmethod
     def get_user_by_id(id: int):
-        return User(database.Database()._get_user_data_by_id(id))
+        return User(database.Database()._get_user_data_by_column('id', id))
+
+    @staticmethod
+    def get_user_by_tg_user_id(tg_user_id: int):
+        data_from_database = database.Database()._get_user_data_by_column('twwg_user_id', tg_user_id)
+        new_user = User(*data_from_database[1:])
+        new_user.id = data_from_database[0]
+        
+        return new_user
 
     def __init__(self, tg_user_id: int, state: int = None, additional_info: int = None):
         self.tg_user_id = tg_user_id
@@ -39,7 +47,4 @@ class User(ModelBase):
         self.additional_info = additional_info
 
     def save(self):
-        print(self.get_serializable_format())
         database.Database()._insert_user(self.get_serializable_format())        
-
-

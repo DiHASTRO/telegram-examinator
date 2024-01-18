@@ -64,5 +64,5 @@ INSERT_QUERIES = {
 }
 
 SELECT_QUERIES = {
-    'get_user_by_id': 'SELECT * FROM users WHERE id = {0}',
+    'get_user_by_column': 'SELECT * FROM users WHERE {0} = {1}',
 }

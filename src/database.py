@@ -67,18 +67,26 @@ class Database(object, metaclass=SingletonMeta):
             self._conn.commit()
         logger.info(f'User inserted successfully into database with values: {names_values}')
 
-    def _get_user_data_by_id(self, id: int) -> tuple:
+    def _get_user_data_by_column(self, column: str, id: int) -> tuple:
         logger.debug(f'Getting user data by database id = {id}')
         with CursorWrapper(self._conn) as cur:
-            query = sql_constants.SELECT_QUERIES['get_user_by_id'].format(id)
+            query = sql_constants.SELECT_QUERIES['get_user_by_column'].format(column, id)
             logger.debug(f'SQL query: {query}')
-            res = cur.execute(query)
+
+            try:
+                res = cur.execute(query)
+            except Exception as e:
+                logger.critical(f'Failed to connect to database: {e}', exc_info=True)
+                raise e
+            
             data = res.fetchone()
             if data is None:
-                logger.warning(f'User with id = {id} does not exist')
-        logger.info(f'Succesfully gotten user data from database with id = {id}')
+                logger.warning(f'User with {column} = {id} does not exist')
+            else:
+                logger.info(f'Succesfully gotten user data from database with {column} = {id}')
         
         return data 
+
 
 class CursorWrapper(object):
 
