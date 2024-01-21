@@ -1,4 +1,4 @@
-from . import models
+from .orm import models
 
 import logging
 

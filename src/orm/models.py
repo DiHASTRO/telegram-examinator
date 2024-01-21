@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from . import database
+from .. import database
 
 class ModelBase(object):
     associated_table = None
@@ -81,3 +81,12 @@ class Subject(ModelBase):
     def __init__(self, name: str = None, owner_user_id: int = None):
         self.name = name
         self.owner_user_id = owner_user_id
+
+
+class Attempt(ModelBase):
+    associated_table = 'attempts'
+    
+    date: str = None
+    user_id: int = None
+    subject_id: int = None
+    grade: float = None
