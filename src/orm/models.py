@@ -2,18 +2,23 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from .. import database
+from .orm_types import DateTime
 
 class ModelBase(object):
     associated_table = None
 
     @classmethod
-    def get_object_by(cls, column, value):
+    def _get_object_by(cls, column, value):
         data_from_database = database.Database()._get_table_data_by_column(cls.associated_table, column, value)
         new_object = cls.__new__(cls)
         new_object.__init__(*data_from_database[1:])
         new_object.id = data_from_database[0]
 
         return new_object
+
+    @classmethod
+    def get_by_id(cls, id: int):
+        return cls._get_object_by('id', id)
 
     def __str__(self):
         to_join = []
@@ -47,12 +52,8 @@ class User(ModelBase):
     additional_info: int = None
 
     @classmethod
-    def get_by_id(cls, id: int):
-        return cls.get_object_by('id', id)
-
-    @classmethod
     def get_by_tg_user_id(cls, tg_user_id: int):
-        return cls.get_object_by('tg_user_id', tg_user_id)
+        return cls._get_object_by('tg_user_id', tg_user_id)
 
     def __init__(self, tg_user_id: int, state: int = None, additional_info: int = None):
         self.tg_user_id = tg_user_id
@@ -68,10 +69,6 @@ class Subject(ModelBase):
     owner_user_id: int = None
     __owner_user: User = None
 
-    @classmethod
-    def get_by_id(cls, id: int):
-        return cls.get_object_by('id', id)
-
     @property
     def owner_user(self) -> User:
         if self.__owner_user is None:
@@ -86,7 +83,28 @@ class Subject(ModelBase):
 class Attempt(ModelBase):
     associated_table = 'attempts'
     
-    date: str = None
+    id: int = None
+    date: DateTime = None
     user_id: int = None
+    __user: User = None
     subject_id: int = None
+    __subject: Subject = None
     grade: float = None
+
+    @property
+    def user(self):
+        if self.__user is None:
+            self.__user = User.get_by_id(self.user_id)
+        return self.__user
+    
+    @property
+    def subject(self):
+        if self.__subject is None:
+            self.__subject = Subject.get_by_id(self.subject_id)
+        return self.__subject
+    
+    def __init__(self, date: DateTime = None, user_id: int = None, subject_id: int = None, grade: float = None):
+        self.date = date
+        self.user_id = user_id
+        self.subject_id = subject_id
+        self.grade = grade
