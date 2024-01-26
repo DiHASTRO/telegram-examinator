@@ -68,24 +68,33 @@ class Database(object, metaclass=SingletonMeta):
             self._conn.commit()
         logger.info(f'Inserted successfully into \'{table}\' with values: {names_values}')
 
-    def _get_table_data_by_column(self, table: str, column: str, id: int) -> tuple:
-        logger.debug(f'Getting data from \'{table}\' with id = {id}')
+    def _get_table_data_by_column(self, table: str, column: str, value) -> tuple:
+        logger.debug(f'Getting data from \'{table}\' with {column} = {value}...')
         with CursorWrapper(self._conn) as cur:
-            query = sql_constants.SELECT_QUERIES['get_by_column'].format(table, column, id)
-
-            try:
-                res = cur.execute(query)
-            except Exception as e:
-                logger.critical(f'Failed to connect to database: {e}', exc_info=True)
-                raise e
+            query = sql_constants.SELECT_QUERIES['get_by_column'].format(table, column, value)
+            res = cur.execute(query)
             
             data = res.fetchone()
             if data is None:
-                logger.warning(f'Row in \'{table}\' with {column} = {id} does not exist')
+                logger.warning(f'Row in \'{table}\' with {column} = {value} does not exist')
             else:
-                logger.info(f'Succesfully gotten data from \'{table}\' with {column} = {id}')
+                logger.info(f'Succesfully gotten data from \'{table}\' with {column} = {value}')
         
-        return data 
+        return data
+
+    def _delete_table_data_by_column(self, table: str, column: str, value):
+        logger.debug(f'Deleting data from \'{table}\' with {column} = {value}')
+        with CursorWrapper(self._conn) as cur:
+            query = sql_constants.DELETE_QUERIES['delete_by_column'].format(table, column, value)
+
+            res = cur.execute(query)
+            self._conn.commit()
+
+        if res.rowcount == 0:
+            logger.warning(f'Row in \'{table}\' with {column} = {value} does not exist. Nothing has been deleted')
+        else:
+            logger.info(f'Deleted successfully from \'{table}\' {res.rowcount} items')
+        return res.rowcount
 
 
 class CursorWrapper(sql.Cursor):
@@ -107,4 +116,9 @@ class CursorWrapper(sql.Cursor):
 
     def execute(self, __sql: str, __parameters: list = ()):
         logger.debug(f'SQL query: {__sql} {f"with parameters {__parameters}" if __parameters else ""}')
-        return super().execute(__sql, __parameters)
+        try:
+            exec_result = super().execute(__sql, __parameters)
+        except Exception as e:
+            logger.critical(f'Failed to execute cursor command: {e}', exc_info=True)
+            raise e
+        return exec_result

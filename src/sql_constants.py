@@ -68,5 +68,9 @@ INSERT_QUERIES = {
 }
 
 SELECT_QUERIES = {
-    'get_by_column': 'SELECT * FROM {0} WHERE {1} = {2}',
+    'get_by_column': 'SELECT * FROM {0} WHERE {1} = {2};',
+}
+
+DELETE_QUERIES = {
+    'delete_by_column': 'DELETE FROM {0} WHERE {1} = {2};',
 }

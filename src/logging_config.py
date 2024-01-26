@@ -19,7 +19,7 @@ BASE_LOGGING = {
             "formatter": "string",
             "filename": "app.log",
             "maxBytes": 65536,
-            "backupCount": "2",
+            "backupCount": 2,
         }
     },
     "loggers": {"": {"handlers": ["stdout", "file"], "level": "DEBUG"}},
