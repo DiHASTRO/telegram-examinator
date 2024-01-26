@@ -1,7 +1,7 @@
 import unittest
 import logging
 
-logging.disable()
+# logging.disable()
 
 import os
 

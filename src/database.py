@@ -60,13 +60,15 @@ class Database(object, metaclass=SingletonMeta):
             cur.close()
         logger.info(f"Databased created succesfully with path {path}")
 
-    def _insert_in_table(self, table: str, names_values: list) -> None:
+    def _insert_in_table(self, table: str, names_values: list) -> int:
         logger.debug(f'Inserting {table} database with values: {dict(map(lambda k, v : (k, v), *names_values))} ...')
         with CursorWrapper(self._conn) as cur:
             query = sql_constants.INSERT_QUERIES['common_insert'].format(table, *names_values)
             cur.execute(query)
+            inserted_id = cur.lastrowid
             self._conn.commit()
         logger.info(f'Inserted successfully into \'{table}\' with values: {names_values}')
+        return inserted_id
 
     def _get_table_data_by_column(self, table: str, column: str, value) -> tuple:
         logger.debug(f'Getting data from \'{table}\' with {column} = {value}...')

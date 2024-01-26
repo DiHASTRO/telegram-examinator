@@ -23,14 +23,6 @@ TABLES_INIT_QUERIES = {
                                     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
                                     FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
                                 );""",
-    'users_subjects_mtm':       """
-                                CREATE TABLE user_subjects_mtm (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    user_id INTEGER NOT NULL,
-                                    subject_id INTEGER NOT NULL,
-                                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-                                    FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
-                                );""",
     'questions':                """
                                 CREATE TABLE questions (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,

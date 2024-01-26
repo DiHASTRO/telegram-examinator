@@ -40,7 +40,7 @@ class ModelBase(object):
             )
 
     def save(self):
-        database.Database()._insert_in_table(self.associated_table, self.get_serializable_format())
+        self.id = database.Database()._insert_in_table(self.associated_table, self.get_serializable_format())
 
 
 class User(ModelBase):
