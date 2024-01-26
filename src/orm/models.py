@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from .. import database
-from .orm_types import DateTime
+from .orm_types import DateTime, Image
 
 class ModelBase(object):
     associated_table = None
@@ -108,3 +108,19 @@ class Attempt(ModelBase):
         self.user_id = user_id
         self.subject_id = subject_id
         self.grade = grade
+
+
+class Question(ModelBase):
+    associated_table = "questions"    
+
+    id: int = None
+    subject_id: int = None
+    __subject: Subject = None
+    answer_id: int = None
+    __answer: 'Answer' = None
+    question_text: str = None
+    photos: List[Image] = None
+
+
+class Answer(ModelBase):
+    pass
